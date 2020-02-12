@@ -4,21 +4,21 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pickle
 
-with open('cbas.pkl','rb') as f:
+with open('cbas.pkl','rb') as f: #open data file, pickle is a format which is a binary file
     cbas = pickle.load(f)
 
 def avg_dis(df):
     '''Find the average difference in sampling'''
-    indices = df.index.tolist()
-    return np.average([indices[i+1] - indices[i] for i in range(len(indices[:-1]))])
+    indices = df.index.tolist() #indices of the data file, which are the time samples
+    return np.average([indices[i+1] - indices[i] for i in range(len(indices[:-1]))]) #get the difference between the current i and the next one
 
 def plot_fft(df,ax):
     data = df['Obj1']
     b_fft = fft(data)
     T=avg_dis(df)
     N=len(b_fft)
-    f = np.linspace(0,1/T, N)
-    ax.plot((f[1:]**-1)*24,np.abs(b_fft)**2[1:])
+    f = np.linspace(0,1/T, N) #create x axis
+    ax.plot((f[1:]**-1)*24,np.abs(b_fft)**2[1:]) #do 1/x-axis * 24 to go from frequency to period, in hours
 
 def plot_regular(df,ax):
     data = df['Obj1']
