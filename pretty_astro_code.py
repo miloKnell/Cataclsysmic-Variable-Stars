@@ -1,45 +1,53 @@
 import numpy as np
-from scipy.fftpack import fft
 import matplotlib.pyplot as plt
-import pandas as pd
 import pickle
 
-with open('cbas.pkl','rb') as f: #open data file, pickle is a format which is a binary file
+def ndft(x, f, k):
+    '''non-equispaced discrete Fourier transform'''
+    return np.dot(f, np.exp(2j * np.pi * k * x[:, np.newaxis]))
+
+N = 40
+step=0.001
+k = np.arange(step,N,step)
+
+with open('cbas.pkl','rb') as f:
     cbas = pickle.load(f)
 
-def avg_dis(df):
-    '''Find the average difference in sampling'''
-    indices = df.index.tolist() #indices of the data file, which are the time samples
-    return np.average([indices[i+1] - indices[i] for i in range(len(indices[:-1]))]) #get the difference between the current i and the next one
+def get_ndft(df):
+    x=df.index.values
+    f=df['Obj1'].values
+    f_k = ndft(x,f,k)
+    psd = np.abs(f_k)**2
+    return psd
 
-def plot_fft(df,ax):
-    data = df['Obj1']
-    b_fft = fft(data)
-    T=avg_dis(df)
-    N=len(b_fft)
-    f = np.linspace(0,1/T, N) #create x axis
-    ax.plot((f[1:]**-1)*24,np.abs(b_fft)**2[1:]) #do 1/x-axis * 24 to go from frequency to period, in hours
+def plot_ndft(df,ax):
+    ax.plot(k,get_ndft(df))
 
 def plot_regular(df,ax):
     data = df['Obj1']
     ax.plot(data.index.to_list(),data.to_list())
 
+def plot_on_one():
+    '''Plot the ndft for every night on one graph'''
+    for cba in cbas:
+       plot_ndft(cba,plt)
+    plt.show()
+
+def plot_sum():
+    '''Plot one function, the sum of every night's ndft'''
+    ndfts = [get_ndft(cba) for cba in cbas]
+    full = [sum([ndft[i] for ndft in ndfts]) for i in range(len(k))]
+    plt.plot(k,full)
+    plt.show()
 
 def plot_with_subplots():
-    '''Plot each night, show raw data and fft'''
-    f,axes=plt.subplots(2,9,sharey='row',sharex='row')
+    '''Plot each night, show raw data and ndft'''
+    f,axes=plt.subplots(2,9,sharey='row')
 
     for df,ax in zip(cbas,axes[0]):
-        plot_fft(df,ax)
+        plot_ndft(df,ax)
 
     for df,ax in zip(cbas,axes[1]):
         plot_regular(df,ax)
 
-    plt.show()
-
-
-def plot_one_graph():
-    '''Plot every night on a single graph'''
-    for cba in cbas:
-        plot_fft(cba,plt)
     plt.show()
