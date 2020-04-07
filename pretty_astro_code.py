@@ -57,24 +57,26 @@ def plot_local_maxima(ndft,ax,return_only=False):
 
 
 
-def plot_on_one(ds):
+def plot_on_one(ds,ax=plt,show=True):
     '''Plot the ndft for every night on one graph'''
     #ndfts = [get_ndft(s) for s in ds]
     with sns.husl_palette(len(ds),h=.5,l=.55):
         for i,ndft in enumerate(ndfts):
-           plot_ndft(ndft,plt,label=i)
-           plot_local_maxima(ndft,plt)
+           plot_ndft(ndft,ax,label=i)
+           plot_local_maxima(ndft,ax)
         plt.legend(loc='best')
-        plt.show()
+        if show==True:
+            plt.show()
 
-def plot_sum(ds):
+def plot_sum(ds,ax=plt,show=True):
     '''Plot one function, the sum of every night's ndft'''
     #ndfts = [get_ndft(s) for s in ds]
     full = [sum([ndft[i] for ndft in ndfts]) for i in range(len(k))]
-    plt.plot(k,full)
-    plt.show()
+    ax.plot(k,full)
+    if show==True:
+        plt.show()
 
-def plot_with_subplots(ds,ratio=True):
+def plot_with_subplots(ds,ax=plt,show=Trueratio=True):
     '''Plot each night, show raw data and ndft'''
     if ratio == True:
         ratio = [s['Date'].iloc[-1]-s['Date'][0] for s in ds]
@@ -92,7 +94,8 @@ def plot_with_subplots(ds,ratio=True):
 
     plt.subplots_adjust(left=0.05,right=0.95,bottom=0.05,top=0.95)
     f.tight_layout()
-    plt.show()
+    if show==True:
+        plt.show()
 
 
 
@@ -109,15 +112,29 @@ def norm(ds):
         dfs.append(df)
     return dfs
 
-both=norm(both)
-
-def fold(ds,period):
+def fold(ds,period,ax=plt,show=True):
     '''in progress folding'''
     period=period/24
     for df in ds:
         x=(df['Date']-df['Date'][0])/period
-        plt.plot(x,df['Obj1'])
-        
-    plt.show()
+        ax.plot(x,df['Obj1'])
+    if show==True:    
+        plt.show()
 
-fold(both,3.7)
+both=norm(both)
+
+#compare on one
+'''plot_on_one(both,show=False)
+max_=max([max(ndft) for ndft in ndfts])
+plt.axvline(3.74,0,max_)
+plt.axvline(4.75,0,max_)
+plt.show()'''
+
+
+#compare folded subplots
+'''f,axes = plt.subplots(1,2)
+fold(both,4.75,ax=axes[0],show=False)
+axes[0].title.set_text('4.75')
+fold(both,3.74,ax=axes[1],show=False)
+axes[1].title.set_text('3.74')
+plt.show()'''
