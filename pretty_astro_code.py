@@ -21,10 +21,6 @@ with open('ulw.pkl','rb') as f:
 
 with open('both.pkl','rb') as f:
     both = pickle.load(f)
-    
-with open('ndfts.pkl','rb') as f:
-    ndfts = pickle.load(f)
-
 
 def get_ndft(df):
     x=df['Date'].values
@@ -39,7 +35,7 @@ def get_plot_ndft(df,ax):
 def plot_ndft(ndft,ax,label=None):
     ax.plot((k**-1)*24,ndft,label=label)
 
-def plot_regular(df,ax):
+def plot_regular(df,ax=plt):
     ax.plot(df['Date'].to_list(),df['Obj1'].to_list())
 
 
@@ -56,10 +52,9 @@ def plot_local_maxima(ndft,ax,return_only=False):
 
 
 
-
 def plot_on_one(ds,ax=plt,show=True):
     '''Plot the ndft for every night on one graph'''
-    #ndfts = [get_ndft(s) for s in ds]
+    ndfts = [get_ndft(s) for s in ds]
     with sns.husl_palette(len(ds),h=.5,l=.55):
         for i,ndft in enumerate(ndfts):
            plot_ndft(ndft,ax,label=i)
@@ -70,18 +65,18 @@ def plot_on_one(ds,ax=plt,show=True):
 
 def plot_sum(ds,ax=plt,show=True):
     '''Plot one function, the sum of every night's ndft'''
-    #ndfts = [get_ndft(s) for s in ds]
+    ndfts = [get_ndft(s) for s in ds]
     full = [sum([ndft[i] for ndft in ndfts]) for i in range(len(k))]
     ax.plot(k,full)
     if show==True:
         plt.show()
 
-def plot_with_subplots(ds,ax=plt,show=Trueratio=True):
+def plot_with_subplots(ds,ax=plt,show=True,ratio=True):
     '''Plot each night, show raw data and ndft'''
     if ratio == True:
         ratio = [s['Date'].iloc[-1]-s['Date'][0] for s in ds]
     f,axes=plt.subplots(2,len(ds),sharey='row',gridspec_kw={'width_ratios':ratio})
-    #ndfts = [get_ndft(s) for s in ds]
+    ndfts = [get_ndft(s) for s in ds]
     
     for i,(ndft,ax) in enumerate(zip(ndfts,axes[0])):
         plot_ndft(ndft,ax)
@@ -98,43 +93,43 @@ def plot_with_subplots(ds,ax=plt,show=Trueratio=True):
         plt.show()
 
 
+#1.9,3.4-3.5 ish
 
-
-def norm(ds):
-    '''make end of each night the same as the start of the next'''
+def norm(ds,sigma_clip=5):
+    '''mean light curve and sigma clipping'''
     dfs=[]
-    for i,df in enumerate(ds):
-        start=df['Obj1'].iloc[0]
-        if i==0:
-            end=start
-        df['Obj1']=df['Obj1']-(start-end)
-        end=df['Obj1'].iloc[-1]
+    for df in ds:
+        mean = np.sum(df['Obj1'])/len(df)
+        std = np.std(df['Obj1'])
+        df.drop(df[abs(df['Obj1']-mean)/sigma_clip>std].index) #drop outliers
+        df['Obj1']=df['Obj1']-mean
         dfs.append(df)
     return dfs
 
 def fold(ds,period,ax=plt,show=True):
-    '''in progress folding'''
+    '''Fold along a period'''
     period=period/24
     for df in ds:
         x=(df['Date']-df['Date'][0])/period
         ax.plot(x,df['Obj1'])
+        try: #different arg styles for plt and plt.ax
+            ax.xlim(0,2)
+        except:
+            ax.set_xlim(0,2)
     if show==True:    
         plt.show()
 
+
+def compare_folded_periods(ds,periods):
+    '''Compare folded periods as subplots'''
+    f,axes = plt.subplots(1,len(periods),sharey='row')
+    #max_=max([max(df['Obj1']) for df in ds])
+    for period,ax in zip(periods,axes):
+        fold(ds,period,ax=ax,show=False)
+        ax.title.set_text('Period of {} hours'.format(period))
+        ax.set_xlim(0,2)
+        #ax.axvline(1,0,max_,color='k',lw=1.2)
+    plt.show()
+
 both=norm(both)
-
-#compare on one
-'''plot_on_one(both,show=False)
-max_=max([max(ndft) for ndft in ndfts])
-plt.axvline(3.74,0,max_)
-plt.axvline(4.75,0,max_)
-plt.show()'''
-
-
-#compare folded subplots
-'''f,axes = plt.subplots(1,2)
-fold(both,4.75,ax=axes[0],show=False)
-axes[0].title.set_text('4.75')
-fold(both,3.74,ax=axes[1],show=False)
-axes[1].title.set_text('3.74')
-plt.show()'''
+compare_folded_periods(both,[1.5,2,2.5,3.74,4.75])
