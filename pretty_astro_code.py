@@ -135,6 +135,7 @@ def compare_folded_periods(ds,periods):
 
 
 def compare_sigma_clip(ds,clips):
+    '''Compare sigma clips visually'''
     f,axes = plt.subplots(1,len(clips),sharey='row')
     for clip,ax in zip(clips,axes):
         ds=norm(ds,n_sigmas=clip)
@@ -143,7 +144,10 @@ def compare_sigma_clip(ds,clips):
     plt.show()
     
 def plot_joe(df):
+    '''Takes a single dataframe that has been preprocessed and displays the ndft'''
     ndfts = get_ndft(df)
     plt.plot((k**-1)*24,ndfts)
     plt.show()
     return ndfts
+
+compare_sigma_clip(both,[1,2,3,4,5])
