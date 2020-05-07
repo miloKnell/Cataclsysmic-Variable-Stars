@@ -66,7 +66,7 @@ def plot_sum(ds,ax=plt,show=True):
     '''Plot one line, the sum of every night's ndft'''
     ndfts = [get_ndft(s) for s in ds]
     full = [sum([ndft[i] for ndft in ndfts]) for i in range(len(k))] #at each point in k grid, sum
-    ax.plot(k,full)
+    ax.plot(24*(k**-1),full)
     if show==True:
         plt.show()
 
@@ -100,11 +100,11 @@ def norm(ds,n_sigmas=5):
     for df in ds:
         mean = np.sum(df['Obj1'])/len(df)
         std = np.std(df['Obj1'])
-        to_drop=df[abs(df['Obj1']-mean)/n_sigmas>std]
+        to_drop=df[abs(df['Obj1']-mean)/std>n_sigmas]
         df=df.drop(to_drop.index) #drop outliers with sigma clipping
         dropped+=len(to_drop)
         df['Obj1']=df['Obj1']-mean
-        dfs.append(df)
+        dfs.append(df.reset_index())
     print(dropped)
     return dfs
 
@@ -136,18 +136,67 @@ def compare_folded_periods(ds,periods):
 
 def compare_sigma_clip(ds,clips):
     '''Compare sigma clips visually'''
-    f,axes = plt.subplots(1,len(clips),sharey='row')
+    f,axes = plt.subplots(1,len(clips),sharey='row',sharex='row')
     for clip,ax in zip(clips,axes):
         ds=norm(ds,n_sigmas=clip)
         plot_on_one(ds,ax=ax,show=False)
         ax.title.set_text('Clipping at {} sigmas'.format(clip))
+        ax.axvline(3.74,color='k',lw=1.2)
     plt.show()
     
-def plot_joe(df):
+def plot_ndft_joe(df):
     '''Takes a single dataframe that has been preprocessed and displays the ndft'''
     ndfts = get_ndft(df)
     plt.plot((k**-1)*24,ndfts)
     plt.show()
     return ndfts
 
-compare_sigma_clip(both,[1,2,3,4,5])
+def norm_joe(df,n_sigmas):
+    dropped=0
+    mean = np.sum(df['Obj1'])/len(df)
+    std = np.std(df['Obj1'])
+    to_drop=df[abs(df['Obj1']-mean)/std>n_sigmas]
+    df=df.drop(to_drop.index) #drop outliers with sigma clipping
+    dropped+=len(to_drop)
+    df['Obj1']=df['Obj1']-mean
+    print(dropped)
+    return df.reset_index()
+
+def plot_joe(df):
+    plt.plot(df['Date'],df['Obj1'])
+    plt.show()
+
+def night_sep_joe(df,n_sigmas=2):
+    diffs=[]
+    for i in range(len(joe)):
+        diff=joe['Date'][i+1]-joe['Date'][i]
+        diffs.append(diff)
+        if i==len(joe)-2:
+            break
+    mean=np.mean(diffs)
+    std=np.std(diffs)
+    df=pd.Series(diffs)
+    return df[abs(df-mean)/std>n_sigmas]
+
+def split_joe(df,splits=None):
+    if splits is None:
+        splits=night_sep_joe(df)
+    ds=[]
+    splits=splits.index
+    for i in range(len(splits)):
+        start=splits[i]
+        stop=splits[i+1]
+        ds.append(df[start:stop])
+        if i==len(splits)-2:
+            break
+    return ds
+
+joe=read_joe('bh986-00.ne')
+joe=norm_joe(joe,n_sigmas=2)
+joe_split=split_joe(joe)
+
+#compare_sigma_clip(both,[1,1.5,2,2.5,3,4])    
+#both=norm(both,n_sigmas=2.5)
+#plot_on_one(both)
+#plot_sum(both)
+#compare_folded_periods(both,[1.5,1.9,3.74,4.75,5.3])
