@@ -186,17 +186,22 @@ def split_joe(df,splits=None):
     for i in range(len(splits)):
         start=splits[i]
         stop=splits[i+1]
-        ds.append(df[start:stop])
+        new_df=df[start+1:stop].reset_index()
+        ds.append(new_df)
         if i==len(splits)-2:
             break
     return ds
 
 joe=read_joe('bh986-00.ne')
-joe=norm_joe(joe,n_sigmas=2)
-joe_split=split_joe(joe)
+#joe=norm_joe(joe,n_sigmas=3)
+plot_ndft_joe(joe)
+#joe_split=split_joe(joe)
+#plot_with_subplots(joe_split)
 
+'''both=norm(both,n_sigmas=25)
+joined=pd.concat(both)
+plot_ndft_joe(joined)'''
 #compare_sigma_clip(both,[1,1.5,2,2.5,3,4])    
-#both=norm(both,n_sigmas=2.5)
 #plot_on_one(both)
 #plot_sum(both)
 #compare_folded_periods(both,[1.5,1.9,3.74,4.75,5.3])
