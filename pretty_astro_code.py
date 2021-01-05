@@ -1,8 +1,22 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle
 import seaborn as sns
 import pandas as pd
+import os
+
+def read_both():
+    both = []
+    files = os.listdir('data')
+    for file in files:
+        file = os.path.join('data',file)
+        both.append(pd.read_csv(file))
+
+    return both
+        
+
+def write_both(both):
+    for i,df in enumerate(both):
+        df.to_csv('data/{}-both.csv'.format(i))
 
 
 def ndft(x, f, k):
@@ -14,8 +28,7 @@ N = 40
 step=0.001
 k = np.arange(start,N,step)
 
-with open('both.pkl','rb') as f:
-    both = pickle.load(f)
+both = read_both()
 
 
 def read_joe(file):
@@ -193,14 +206,14 @@ def split_joe(df,splits=None):
     return ds
 
 joe=read_joe('bh986-00.ne')
-#joe=norm_joe(joe,n_sigmas=3)
+joe=norm_joe(joe,n_sigmas=3)
 plot_ndft_joe(joe)
 #joe_split=split_joe(joe)
 #plot_with_subplots(joe_split)
 
-'''both=norm(both,n_sigmas=25)
-joined=pd.concat(both)
-plot_ndft_joe(joined)'''
+#both=norm(both,n_sigmas=5)
+#joined=pd.concat(both)
+#plot_ndft_joe(joined)
 #compare_sigma_clip(both,[1,1.5,2,2.5,3,4])    
 #plot_on_one(both)
 #plot_sum(both)
