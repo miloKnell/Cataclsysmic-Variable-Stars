@@ -10,7 +10,6 @@ def read_both():
     for file in files:
         file = os.path.join('data',file)
         both.append(pd.read_csv(file))
-
     return both
         
 
@@ -135,6 +134,40 @@ def fold(ds,period,ax=plt,show=True):
         plt.show()
 
 
+def fold_joe():       
+    df=norm_joe(joe,n_sigmas=5)
+    df = df.sort_values(by='Date')
+    df['Date'] = df['Date']/24/60/60
+    period=3.96
+    period = period/24
+    df['Date']=(df['Date']-df['Date'][0])/period
+    df = df.sort_values(by='Date')
+    x=df['Date']
+    y=df['Obj1']
+    folds = []
+    temp=[]
+    i=1
+    for row in df.iterrows():
+        row = row[1]
+        if row['Date'] <=i:
+            temp.append((row['Date']-i+1,row['Obj1'],i))
+        elif row['Date'] > i:
+            if len(temp) > 0:
+                folds.append(temp)
+            temp = []
+            i+=1
+
+    x=[]
+    y=[]
+    for fold in folds:
+        tmp_x = [i[0] for i in fold]
+        tmp_y = [i[1] for i in fold]
+        x+=tmp_x
+        y+=tmp_y
+        
+    plt.scatter(x,y)
+    plt.show()
+
 def compare_folded_periods(ds,periods):
     '''Compare folded periods as subplots'''
     f,axes = plt.subplots(1,len(periods),sharey='row')
@@ -206,13 +239,16 @@ def split_joe(df,splits=None):
     return ds
 
 joe=read_joe('bh986-00.ne')
-joe=norm_joe(joe,n_sigmas=3)
-plot_ndft_joe(joe)
+joe=norm_joe(joe,n_sigmas=5)
+#plot_ndft_joe(joe)
+#fold(joe,3.96)
 #joe_split=split_joe(joe)
 #plot_with_subplots(joe_split)
 
 #both=norm(both,n_sigmas=5)
 #joined=pd.concat(both)
+#normed = norm([joined],n_sigmas=5)
+#compare_folded_periods(normed,[1.5,1.9,3.74,4.75,5.3])
 #plot_ndft_joe(joined)
 #compare_sigma_clip(both,[1,1.5,2,2.5,3,4])    
 #plot_on_one(both)
