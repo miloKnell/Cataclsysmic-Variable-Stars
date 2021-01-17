@@ -23,11 +23,9 @@ def ndft(x, f, k):
     return np.dot(f, np.exp(-2j * np.pi * k * x[:, np.newaxis]))
 
 start= 2.4 #10 hour max
-N = 40
+N = 100 #40
 step=0.001
 k = np.arange(start,N,step)
-
-both = read_both()
 
 
 def read_joe(file):
@@ -239,23 +237,41 @@ def split_joe(df,splits=None):
     return ds
 
 period = 0.0119 #period of AM
-#read_joe('am894751.hz')
-am  = pd.read_csv('am894751.hz',sep='\s+',names=['Date','Obj1'])
-df = am[0:274]
-x = df['Date'] % period
-#joe=read_joe('bh986-00.ne')
-#joe=norm_joe(joe,n_sigmas=5)
-#plot_ndft_joe(joe)
-#fold(joe,3.96)
-#joe_split=split_joe(joe)
-#plot_with_subplots(joe_split)
+df  = pd.read_csv('am894751.hz',sep='\s+',names=['Date','Obj1'])
+df = df[1171:2033]
+x = df['Date']
+y=df['Obj1']
+plt.plot(x,y)
+#plt.scatter(x%period,y)
+plt.show()
 
-#both=norm(both,n_sigmas=5)
-#joined=pd.concat(both)
-#normed = norm([joined],n_sigmas=5)
-#compare_folded_periods(normed,[1.5,1.9,3.74,4.75,5.3])
-#plot_ndft_joe(joined)
-#compare_sigma_clip(both,[1,1.5,2,2.5,3,4])    
-#plot_on_one(both)
-#plot_sum(both)
-#compare_folded_periods(both,[1.5,1.9,3.74,4.75,5.3])
+#ndft = get_ndft(df)
+#plt.plot(k**-1,ndft)
+#plt.show()
+
+
+
+
+'''
+Use newer BH-lyn data
+joe=read_joe('bh986-00.ne')
+joe=norm_joe(joe,n_sigmas=5)
+plot_ndft_joe(joe)
+fold(joe,3.96)
+joe_split=split_joe(joe)
+plot_with_subplots(joe_split)
+'''
+
+'''
+Compare on old BH-lyn data
+both = read_both()
+both=norm(both,n_sigmas=5)
+joined=pd.concat(both)
+normed = norm([joined],n_sigmas=5)
+compare_folded_periods(normed,[1.5,1.9,3.74,4.75,5.3])
+plot_ndft_joe(joined)
+compare_sigma_clip(both,[1,1.5,2,2.5,3,4])    
+plot_on_one(both)
+plot_sum(both)
+compare_folded_periods(both,[1.5,1.9,3.74,4.75,5.3])
+'''
