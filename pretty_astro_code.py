@@ -137,7 +137,7 @@ def fold(ds,period,ax=plt,show=True):
 def fold_joe():       
     df=norm_joe(joe,n_sigmas=5)
     df = df.sort_values(by='Date')
-    df['Date'] = df['Date']/24/60/60
+    df['Date'] = df['Date']
     period=3.96
     period = period/24
     df['Date']=(df['Date']-df['Date'][0])/period
@@ -238,8 +238,13 @@ def split_joe(df,splits=None):
             break
     return ds
 
-joe=read_joe('bh986-00.ne')
-joe=norm_joe(joe,n_sigmas=5)
+period = 0.0119 #period of AM
+#read_joe('am894751.hz')
+am  = pd.read_csv('am894751.hz',sep='\s+',names=['Date','Obj1'])
+df = am[0:274]
+x = df['Date'] % period
+#joe=read_joe('bh986-00.ne')
+#joe=norm_joe(joe,n_sigmas=5)
 #plot_ndft_joe(joe)
 #fold(joe,3.96)
 #joe_split=split_joe(joe)
