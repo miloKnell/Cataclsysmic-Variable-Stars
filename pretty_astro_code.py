@@ -27,14 +27,6 @@ N = 100 #40
 step=0.001
 k = np.arange(start,N,step)
 
-
-def read_joe(file):
-    with open(file,'r') as f:
-        data=f.readlines()
-    cleaned = pd.DataFrame([[d for d in line.strip().split(' ') if d!=''] for line in data]).astype(float)
-    cleaned.columns =['Date','Obj1']
-    return cleaned
-
 def get_ndft(df):
     x=df['Date'].values
     f=df['Obj1'].values
@@ -42,13 +34,10 @@ def get_ndft(df):
     psd = np.abs(f_k)**2
     return psd
 
-def get_plot_ndft(df,ax):
-    ax.plot((k**-1)*24,get_ndft(df))
-
 def plot_ndft(ndft,ax,label=None):
     ax.plot((k**-1)*24,ndft,label=label)
 
-def plot_regular(df,ax=plt):
+def plot(df,ax=plt):
     ax.plot(df['Date'].to_list(),df['Obj1'].to_list())
 
 
@@ -236,16 +225,17 @@ def split_joe(df,splits=None):
             break
     return ds
 
+
 period = 0.0119 #period of AM
 df  = pd.read_csv('am894751.hz',sep='\s+',names=['Date','Obj1'])
-df = df[1171:2033]
+#df = df[1171:2033]
 x = df['Date']
 y=df['Obj1']
-plt.plot(x,y)
+#plt.plot(x,y)
 #plt.scatter(x%period,y)
-plt.show()
+#plt.show()
 
-#ndft = get_ndft(df)
+ndft = get_ndft(df)
 #plt.plot(k**-1,ndft)
 #plt.show()
 
@@ -253,14 +243,44 @@ plt.show()
 
 
 '''
-Use newer BH-lyn data
-joe=read_joe('bh986-00.ne')
-joe=norm_joe(joe,n_sigmas=5)
-plot_ndft_joe(joe)
-fold(joe,3.96)
-joe_split=split_joe(joe)
-plot_with_subplots(joe_split)
+#Use newer BH-lyn data
+period = 0.15583333333333335 #(0.078=superhump?)
+df  = pd.read_csv('bh986-00.ne',sep='\s+',names=['Date','Obj1'])
+#df = df[3426:4016]
+#df = df[4017:]
+#df=norm_joe(df,n_sigmas=5)
+x = df['Date']
+y=df['Obj1']
+
+#plt.plot(x,y,'bo')
+#plt.plot(x%period/period,y,'bo',x%period/period+1,y,'bo')
+#plt.show()
+
+from sklearn.cluster import KMeans,OPTICS,DBSCAN
+a = x.values.reshape(-1,1)
+#cluster = OPTICS(min_samples=40).fit_predict(a)
+#cluster = KMeans(n_clusters=11).fit_predict(a)
+cluster = DBSCAN(eps=0.3,min_samples=10).fit_predict(a)
+df['Cluster'] = cluster
+
+#fig,axes = plt.subplots(11,1,sharey=True)
+#for (i,group),ax in zip(df.groupby(df['Cluster']),axes):
+    #x=group['Date']
+    #y=group['Obj1']
+    #ax.plot(x%period/period,y,'bo',x%period/period+1,y,'bo') #periods
+    #ax.plot(k**-1,get_ndft(group)) #ndft
+    #ax.axvline(period)
+    #ax.plot(x,y) #on many
+
+plt.scatter(x,y) #on one
+plt.show()
+
+
+#ndft = get_ndft(df)
+#plt.plot(k**-1,ndft)
+#plt.show()
 '''
+
 
 '''
 Compare on old BH-lyn data
