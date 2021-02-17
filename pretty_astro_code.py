@@ -22,9 +22,9 @@ def ndft(x, f, k):
     '''non-equispaced discrete Fourier transform'''
     return np.dot(f, np.exp(-2j * np.pi * k * x[:, np.newaxis]))
 
-start= 2.4 #10 hour max
+start = 5 #10 hour max #2.4
 N = 100 #40
-step=0.001
+step = 0.001
 k = np.arange(start,N,step)
 
 def get_ndft(df):
@@ -225,24 +225,24 @@ def split_joe(df,splits=None):
             break
     return ds
 
-
-period = 0.0119 #period of AM
+'''
+period = 0.0119 #period of AM-CVN
 df  = pd.read_csv('am894751.hz',sep='\s+',names=['Date','Obj1'])
 #df = df[1171:2033]
 x = df['Date']
 y=df['Obj1']
-#plt.plot(x,y)
+plt.plot(x,y)
 #plt.scatter(x%period,y)
 #plt.show()
 
-ndft = get_ndft(df)
+#ndft = get_ndft(df)
 #plt.plot(k**-1,ndft)
 #plt.show()
-
-
-
-
 '''
+
+
+
+
 #Use newer BH-lyn data
 period = 0.15583333333333335 #(0.078=superhump?)
 df  = pd.read_csv('bh986-00.ne',sep='\s+',names=['Date','Obj1'])
@@ -263,23 +263,22 @@ a = x.values.reshape(-1,1)
 cluster = DBSCAN(eps=0.3,min_samples=10).fit_predict(a)
 df['Cluster'] = cluster
 
-#fig,axes = plt.subplots(11,1,sharey=True)
-#for (i,group),ax in zip(df.groupby(df['Cluster']),axes):
-    #x=group['Date']
-    #y=group['Obj1']
+fig,axes = plt.subplots(11,1,sharey=True)
+for (i,group),ax in zip(df.groupby(df['Cluster']),axes):
+    x=group['Date']
+    y=group['Obj1']
     #ax.plot(x%period/period,y,'bo',x%period/period+1,y,'bo') #periods
-    #ax.plot(k**-1,get_ndft(group)) #ndft
+    ax.plot(k**-1,get_ndft(group)) #ndft
     #ax.axvline(period)
     #ax.plot(x,y) #on many
 
-plt.scatter(x,y) #on one
+#plt.scatter(x,y) #on one
 plt.show()
 
 
 #ndft = get_ndft(df)
 #plt.plot(k**-1,ndft)
 #plt.show()
-'''
 
 
 '''
