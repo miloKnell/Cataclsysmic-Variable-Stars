@@ -18,12 +18,19 @@ with open(in_file,'r') as f:
 
         data.append(line)
 
+
+base_jd = 0
+norm_factor = 0
+
 jd_col = 0
 mag_col = 3
+
+
 jd = np.array([line[jd_col] for line in data])
 mag = np.array([line[mag_col] for line in data])
 
-mag = mag/mag[0]
+mag += norm_factor
+jd += base_jd
 
 with open(out_file,'w') as f: #write
     f.write('JD, magnitude\n')
