@@ -14,7 +14,7 @@ k = np.arange(start,N,step)
 def read_psd(filename):
     with open(filename,'r') as f:
         psd = f.read().strip().split('\n')
-    psd = np.array(psd)
+    psd = np.array(psd).astype(np.float32)
     return psd
 
 psd = read_psd('psd.txt')
